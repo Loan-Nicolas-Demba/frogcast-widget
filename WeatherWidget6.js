@@ -430,7 +430,7 @@ class WeatherWidget extends HTMLElement {
       <div class="top-right">
         <div class="brand-name">
         <a href="https://frogcast.com" target="_blank" rel="noopener noreferrer">
-          <img class="brand-logo" src="frogcast.webp" alt="Frogcast Home">
+          <img class="brand-logo" src="https://loan-nicolas-demba.github.io/frogcast-widget/frogcast.webp" alt="Frogcast Home">
         </a>
         </div>
       </div>
