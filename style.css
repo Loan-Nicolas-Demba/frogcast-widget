@@ -1,0 +1,127 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: transparent;
+}
+
+.widget {
+  width: 100%;
+  max-width: 560px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.info h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.info p {
+  margin: 0 0 16px;
+  color: #555;
+}
+
+.bar-wrap {
+  position: relative;
+  height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  border: 1px solid #d1d5db;
+}
+
+.dents {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  align-items: center;
+}
+
+.dent {
+  position: relative;
+  height: 44px;
+  cursor: pointer;
+}
+
+.dent::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  transform: translate(-50%, -50%);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.dent.active::after {
+  background: #2563eb;
+  transform: translate(-50%, -50%) scale(1.25);
+}
+
+.cursor {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #2563eb;
+  transform: translate(-50%, -50%);
+  transition: left 0.25s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  pointer-events: none;
+}
+
+.labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #777;
+}
+
+.day-selector {
+  display: inline-flex;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.option {
+  position: relative;
+  cursor: pointer;
+}
+
+.option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.option span {
+  display: block;
+  padding: 10px 18px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #374151;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.option input:checked + span {
+  background: #2563eb;
+  color: white;
+}

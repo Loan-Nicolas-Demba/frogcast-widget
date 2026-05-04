@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Widget Host</title>
+  </head>
+  <body>
+    <h1>Testing</h1>
+
+    <!-- <iframe
+      src="http://localhost:8000/widget.html?title=Hello&message=This%20widget%20is%20customizable"
+      width="100%"
+      height="220"
+      style="border:0; overflow:hidden;"
+    ></iframe> -->
+
+    <script src="/WeatherWidget6.js?v1" defer></script>
+
+    <weather-widget main-color="#033C40">
+      <a slot="branding" href="https://frogcast.com" target="_blank" rel="noopener noreferrer">
+        Powered by FROGCAST API
+      </a>
+    </weather-widget>
+    
+    <!-- unite horizon couleur -->
+    <!-- <iframe src="https://www.meteoblue.com/fr/meteo/widget/three/le-bourget-du-lac_france_3005081?geoloc=fixed&nocurrent=0&noforecast=0&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&days=4&layout=image&user_key=f7ba11a7162f5983&embed_key=ca74ff45c9899485&sig=47833e2f132dd4fc004fd1b48e957465297b383aa0fbacdac2cc9c17cb9c0401" frameborder="0" scrolling="NO" allowtransparency="true" sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox" style="width: 460px;height: 572px;border: 0;overflow: hidden;"></iframe><div>DO NOT REMOVE THIS LINK<a href="https://www.meteoblue.com/fr/meteo/semaine/index" target="_blank" rel="noopener">meteoblue</a></div> -->
+  </body>
+</html>
