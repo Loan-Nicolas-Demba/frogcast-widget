@@ -338,6 +338,7 @@ class WeatherWidget extends HTMLElement {
       box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 8px 18px rgba(0, 0, 0, 0.15);
       transform: translateY(-1px);
     }
+
     .forecast__label {
       margin: 0 0 8px;
       font-size: 13px;
@@ -361,6 +362,23 @@ class WeatherWidget extends HTMLElement {
     .forecast__temp-min {
       margin: 2px 0 0;
       font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .forecast__extra {
+      display: flex;
+      flex-direction: row;
+      gap: 2px;
+      margin: 0;
+      padding: 0;
+      align-self: start;
+      align-items: center;
+    }
+
+    .forecast__mtpa,
+    .forecast__wind {
+      margin: 2px 0 0;
+      font-size: 15px;
       color: rgba(255, 255, 255, 0.7);
     }
 
@@ -1119,14 +1137,34 @@ class WeatherWidget extends HTMLElement {
 
     const days = this.groupForecastByDay(this.weatherData, this.dayAmount);
 
-    container.innerHTML = days.map((day, index) => `
-      <article class="forecast__day ${index === this.selectedDayIndex ? "forecast__day--selected" : ""}" data-day-index="${index}">
-        <p class="forecast__label">${day.label}</p>
-        <div class="forecast__icon" id="forecast-icon-${index}"></div>
-        <p class="forecast__temp-max">${this.formatTemperature(day.max)}</p>
-        <p class="forecast__temp-min">${this.formatTemperature(day.min)}</p>
-      </article>
-    `).join("");
+    container.innerHTML = days.map((day, index) => {
+      const is3Day = this.dayAmount == 3;
+      return `
+        <article class="forecast__day ${index === this.selectedDayIndex ? "forecast__day--selected" : ""}" ${is3Day ? "forecast__day--3day" : ""}" data-day-index="${index}">
+          <p class="forecast__label">${day.label}</p>
+          <div class="forecast__icon" id="forecast-icon-${index}"></div>
+          
+
+          ${
+            is3Day
+              ? `
+                <div class="forecast__extra">
+                  <p class="forecast__mtpa">${this.formatPrecipitation(day.mtpa)}</p>
+                  <div class="forecast__extra-temp">
+                    <p class="forecast__temp-max">${this.formatTemperature(day.max)}</p>
+                    <p class="forecast__temp-min">${this.formatTemperature(day.min)}</p>
+                  </div>
+                  <p class="forecast__wind">${this.formatSpeed(this.getAverage(day.windSpeed))} ${this.degreesToCardinal(this.getAverage(day.windDirection))}</p>
+                </div>
+              `
+              : `
+                <p class="forecast__temp-max">${this.formatTemperature(day.max)}</p>
+                <p class="forecast__temp-min">${this.formatTemperature(day.min)}</p>
+                `
+          }
+        </article>
+      `;
+    }).join("");    
 
     days.forEach((day, index) => {
       const holder = this.shadowRoot.getElementById(`forecast-icon-${index}`);
@@ -1310,6 +1348,9 @@ class WeatherWidget extends HTMLElement {
     const mtsr = weatherData?.mtsr || [];
     const ghi = weatherData?.ghi || [];
     const stormIdx = weatherData?.storm_idx || [];
+    const mtpa = weatherData?.mtpa || [];
+    const windSpeed = weatherData?.windSpeed || [];
+    const windDirection = weatherData?.windDirection || [];
 
     const now = new Date();
     const startUTC = new Date(Date.UTC(
@@ -1337,7 +1378,10 @@ class WeatherWidget extends HTMLElement {
             tcc: [],
             precip: [],
             snowRate: [],
-            isStorm: []
+            isStorm: [],
+            mtpa: [],
+            windSpeed: [],
+            windDirection: []
           });
         }
 
@@ -1351,21 +1395,40 @@ class WeatherWidget extends HTMLElement {
     mergeSeries(mtpr, "precip");
     mergeSeries(mtsr, "snowRate");
     mergeSeries(stormIdx, "isStorm");
+    mergeSeries(mtpa, "mtpa");
+    mergeSeries(windSpeed, "windSpeed");
+    mergeSeries(windDirection, "windDirection");
 
-    return [...grouped.entries()].map(([date, values], i) => ({
-      date,
-      label: i === 0
-        ? "Today"
-        : new Date(date).toLocaleDateString("en-US", { weekday: "short" }),
-      min: values.t2m.length ? Math.round(Math.min(...values.t2m)) : null,
-      max: values.t2m.length ? Math.round(Math.max(...values.t2m)) : null,
-      t2m: values.t2m,
-      ghi: values.ghi,
-      tcc: values.tcc,
-      precip: values.precip,
-      snowRate: values.snowRate,
-      isStorm: values.isStorm
-    }));
+    let lastMtpa = null;
+
+    return [...grouped.entries()].map(([date, values], i) => {
+      const currentMtpa = values.mtpa[values.mtpa.length - 1];
+
+      const mtpa =
+        i === 0 || lastMtpa == null
+          ? currentMtpa
+          : currentMtpa - lastMtpa;
+
+      lastMtpa = currentMtpa;
+      return {
+        date,
+        label:
+          i === 0
+            ? "Today"
+            : new Date(date).toLocaleDateString("en-US", { weekday: "short" }),
+        min: values.t2m.length ? Math.round(Math.min(...values.t2m)) : null,
+        max: values.t2m.length ? Math.round(Math.max(...values.t2m)) : null,
+        t2m: values.t2m,
+        ghi: values.ghi,
+        tcc: values.tcc,
+        precip: values.precip,
+        snowRate: values.snowRate,
+        isStorm: values.isStorm,
+        mtpa, 
+        windSpeed: values.windSpeed,
+        windDirection: values.windDirection,
+      };
+    });
   }
 
 
@@ -1545,9 +1608,6 @@ class WeatherWidget extends HTMLElement {
 
     const temp = currentHourTemp[0];
     this.shadowRoot.getElementById("temperature").textContent = `${this.formatTemperature(temp)}`;
-    console.log("temp", currentHourTemp[0]);
-    console.log("humidity", currentHourHumidity[0]);
-    console.log("speed", currentHourWindSpeed[0]);
     const apparentTemp = this.apparentTemperature(currentHourTemp[0], currentHourHumidity[0], currentHourWindSpeed[0]);
     this.shadowRoot.getElementById("apparent-temperature").textContent = `Apparent temperature ${this.formatTemperature(apparentTemp)}`;
 
@@ -1594,15 +1654,15 @@ class WeatherWidget extends HTMLElement {
     const windDirectionData = this.weatherData?.windDirection;
 
     const dailyAverageSpeed = this.getDailyAverage(windSpeedData);
-    const currentHourDirection = this.filterByCurrentHour(windDirectionData);
-
+    const dailyAverageDirection = this.getDailyAverage(windDirectionData);
+    
     if (!dailyAverageSpeed) {
       this.shadowRoot.getElementById("windSpeed").textContent = "No data";
       return null;
     }
 
     const windSpeed = this.msToKmh(dailyAverageSpeed);
-    const windDirection = currentHourDirection.length ? this.degreesToCardinal(currentHourDirection[0]) : null;
+    const windDirection = this.degreesToCardinal(dailyAverageDirection);
 
     this.shadowRoot.getElementById("current-wind").textContent =
       `${this.formatSpeed(dailyAverageSpeed)} ${windDirection}`;
